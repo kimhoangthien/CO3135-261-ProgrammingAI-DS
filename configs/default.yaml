@@ -1,0 +1,11 @@
+dataset_path: data/raw/cs-training.csv
+target: SeriousDlqin2yrs
+random_seed: 42
+split_ratios: [0.70, 0.15, 0.15]
+models: [logistic_regression, random_forest, xgboost]
+metrics: [roc_auc, average_precision, brier_score, log_loss]
+outputs:
+  processed: data/processed
+  artifacts: artifacts
+  figures: results/figures
+  tables: results/tables
