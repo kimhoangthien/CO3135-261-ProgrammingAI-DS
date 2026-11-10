@@ -35,3 +35,15 @@ results/tables/**
 *.npy
 *.npz
 pytest-cache-files-*/
+
+# Kaggle credentials must remain local
+kaggle.json
+.kaggle/
+access_token
+.env.*
+
+# uv migration staging and rollback environments
+.venv-uv-validation/
+.venv-pip-backup/
+.uv-cache/
+!uv.lock
