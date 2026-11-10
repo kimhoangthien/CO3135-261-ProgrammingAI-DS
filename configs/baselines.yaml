@@ -1,0 +1,9 @@
+threshold: 0.5
+dummy:
+  strategy: prior
+logistic:
+  C: 1.0
+  solver: lbfgs
+  max_iter: 2000
+  tol: 0.0001
+  class_weight: balanced

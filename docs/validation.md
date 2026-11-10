@@ -233,3 +233,99 @@ Removed the temporary .venv-uv-validation environment, pytest/Python caches, Jup
 ## Single requirements export — 2026-11-10
 
 Consolidated compatibility exports into requirements.txt. Verified every package/version in requirements-download.txt was already present in the full uv-generated export before removing the download-only file. Updated README, downloader recovery-message references, and their corresponding test expectation. Dependency configuration, uv.lock and installed versions are unchanged. Executed uv run --locked pytest -q -p no:cacheprovider tests/test_download_dataset.py: 17 passed in 0.53s. Earlier references to requirements-download.txt are historical.
+
+
+## Phase 2A prerequisite validation ? 2026-11-11
+
+Outcome: **blocked by Kaggle authentication; leader scope is incomplete**.
+Inspected the existing data loader, downloader, split implementation,
+preprocessing factory, model contract, notebook analysis, locked dependencies,
+and current raw-data directory before attempting real-data work.
+
+Executed with local uv at artifacts/uv-bootstrap/bin/uv.exe:
+
+- uv sync --locked: succeeded; resolved 131 packages, checked 126 installed.
+- uv run --locked python scripts/download_dataset.py: exited 1 with
+  "Kaggle authentication is missing or invalid." Reused the existing official
+  downloader; no substitute dataset was generated. No credential values exposed.
+- uv run pytest -q -p no:cacheprovider: **34 passed in 7.12s**.
+- Initial sandbox attempts were blocked by uv cache permissions; the approved
+  elevated run produced the results above. The existing environment and lock
+  were preserved, with no dependency changes.
+
+The CSV is absent. Consequently real-data EDA, reloadable shared split creation,
+training-only preprocessing integration checks, Dummy/Logistic Regression fitting,
+validation metrics/predictions and pipeline artifact reload checks were not run.
+The existing 34 unit tests are not proof of successful real-data integration.
+No real-data integration tests or baseline implementations were added in this
+blocked attempt. No Random Forest/XGBoost, calibration, SHAP or cost experiments
+were performed; no commits or pushes were made.
+
+Required user action: create Kaggle credentials at
+https://www.kaggle.com/settings/api and save the token outside the repository to
+%USERPROFILE%/.kaggle/access_token (or legacy kaggle.json in the same directory).
+Join and accept https://www.kaggle.com/competitions/GiveMeSomeCredit/rules with that
+account. Run uv run python scripts/download_dataset.py and rerun it to check the
+valid-data skip path. Unit download-idempotency tests currently pass, but the
+real-data skip path cannot be confirmed until a successful official download.
+
+Handoff order remains: authenticated download; execute/review EDA; create/reload
+and validate the unchanged seed-42 70/15/15 shared split; validate train-only
+preprocessing and feature consistency; implement/train Dummy and Logistic
+Regression baselines; export validation-only metrics/predictions and verify
+pipeline reload; then hand the shared manifest and model contract to the other
+four members. Keep test rows out of fitting, model selection and threshold tuning.
+
+
+## Team foundation finalization (2026-11-11)
+
+Audit: main and the live origin/main both pointed to
+744c684c80977240838dc191fa6a6cee638e7788 before this foundation update. The three
+previously staged status documents were inspected and preserved. No local dev or
+feature branch existed; live git ls-remote --heads origin showed only main after
+a successful fetch. Earlier remote attempts failed to connect; the final retry
+succeeded. No history reset/rewrite was used.
+
+Implementation: completed minimal Dummy prior and balanced Logistic Regression
+factories, validation-only training/evaluation, fixed threshold 0.5, full-pipeline
+persistence/reload checks, exact-schema prediction exports and experiment metadata.
+The training CLI reuses a saved fingerprint-validated split manifest and rejects
+conflicting seed/ratio settings. Median/scaler statistics are checked against
+training data. Feature definitions, shared split implementation, model contract,
+random seed, uv.lock and dependency versions are unchanged. Added fixture tests,
+an optional real-data integration test, member assignments and contributor policy.
+No Member 2-5 experiment was implemented.
+
+Executed checks (from root):
+
+- uv sync --locked: succeeded, resolved 131 packages, checked 126 installed.
+- uv run pytest -q -p no:cacheprovider: **43 passed, 1 skipped in 3.32s**.
+  All original tests passed. The skipped real-data test explicitly requires the
+  absent official CSV. Fixture metrics/models exist only in pytest temporary
+  directories, not as experimental results or committed artifacts.
+- Baseline fixture workflow verified training-only fit rows, validation-only
+  predict rows, train-derived imputation statistics, exact prediction schema,
+  saved/loaded pipeline probability equality, and unchanged manifest on rerun.
+- Logistic Regression, Random Forest and XGBoost interface/preprocessing factories
+  were checked; no RF/XGBoost estimator was fitted. Probability metrics were
+  checked against known expected values. PR-AUC means average precision.
+- uv run python artifacts/foundation_environment_check.py: numpy, pandas, sklearn,
+  xgboost, shap, imblearn and JupyterLab imported; both notebook schemas validated;
+  the live credit-risk kernel used this repository's .venv interpreter and
+  imported shared repository modules successfully. Windows zmq emitted its known
+  selector-fallback warning, but notebook execution passed.
+- uv run python scripts/download_dataset.py: exit 1, Kaggle authentication
+  missing/invalid. No credentials found by presence checks; none were printed.
+- uv run python -m src.train: exit 1 with the explicit missing official CSV
+  message. No real-data artifacts or predictions were produced.
+
+Real-data EDA, real split/preprocessing integration and research baseline metrics
+remain blocked on Kaggle setup. Set a token outside Git at
+%USERPROFILE%/.kaggle/access_token or configure legacy Kaggle credentials, accept
+the competition rules with that account, and follow CONTRIBUTING.md's workflow.
+Do not treat passing fixture tests as completed real-data experiments.
+
+Git publication is a separate step after this validation and staged-file review.
+The final handoff report records the resulting commit and verified local/remote
+branch tips. Only publish after confirming no existing branch will be replaced;
+feature creation must return to synchronized dev before each independent branch.

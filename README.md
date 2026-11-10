@@ -3,7 +3,8 @@
 
 Phase 1 provides data validation, exploratory analysis, reproducible shared splits,
 and preprocessing for future Logistic Regression, Random Forest and XGBoost comparisons.
-No final models are trained. SeriousDlqin2yrs measures serious delinquency, not legal
+Minimal Dummy and Logistic Regression baseline code is provided; real-data runs
+are blocked until the official CSV is available. SeriousDlqin2yrs measures serious delinquency, not legal
 default, bankruptcy or realized loss.
 
 ## Setup with uv (PowerShell, repository root)
@@ -140,7 +141,8 @@ supported for compatible estimators. No resampling is performed.
 - `scripts/download_dataset.py`: official Kaggle download, safe extraction and validation.
 - `pyproject.toml`, `uv.lock`, `.python-version`: dependency groups, lock and interpreter pin.
 - `requirements.txt`: single generated compatibility export, including Kaggle.
-- `src/models/` and remaining experiment modules: documented future scope.
+- `src/train.py`, `src/evaluate.py`, `src/models/logistic.py`: minimal validation-only baselines.
+- Remaining experiment modules: documented future scope for Members 2-5.
 - `notebooks/01_eda.ipynb`, `demo.ipynb`: runnable real-data analysis and demonstration.
 - `docs/`: data dictionary, honest EDA status, shared model contract.
 - `tests/`: synthetic unit fixtures only; no claimed dataset findings.
@@ -148,22 +150,27 @@ supported for compatible estimators. No resampling is performed.
 
 ## Git and parallel work
 
-`main` is stable; `dev` integrates reviewed work. Create feature branches from dev,
-e.g. `feature/data-eda`, `feature/logistic-regression`, `feature/random-forest`,
-`feature/xgboost`, and `feature/evaluation`. Merge reviewed features into dev and
-promote reviewed milestones to main. This repository started with an unborn main;
-dev cannot be created until an authorized initial commit exists. After that commit:
+`main` holds the validated foundation; `dev` integrates reviewed features.
+All five feature branches must be created independently from the same dev commit,
+after dev is pushed and synchronized. Feature PRs target dev. Never force-push
+main/dev or create a feature from main/another feature. Existing branches must
+be inspected and preserved. Remote setup is complete only after push and
+remote-tip verification succeed.
 
-```powershell
-git switch -c dev
-git switch -c feature/your-task
-```
-
-No commits or pushes are performed by setup. Generated data, models, virtual
-environments and caches are ignored. See `docs/model_contract.md` for fit/probability
-interfaces, prediction schema, complete pipeline persistence and experiment metadata.
+See [team assignments](docs/TEAM_TASKS.md) and the [contributor workflow](docs/CONTRIBUTING.md)
+for each member's exact existing-branch checkout, uv setup, rebase/conflict policy,
+file ownership and handoff order. Member 1 leads integration review.
 
 ## Status and next work
+
+**Phase 2A status (2026-11-11): blocked by Kaggle authentication.** The official
+download returned "Kaggle authentication is missing or invalid"; the CSV remains
+absent. Configure credentials and accept the competition rules using the Official
+data instructions above, then rerun `uv run python scripts/download_dataset.py`.
+No real-data EDA or trained Dummy/Logistic Regression baselines, metrics, or fitted artifacts
+have been produced. The leader scope and real-data integration checks remain
+incomplete. All 34 existing unit tests passed during this prerequisite check.
+
 
 Foundation implemented. Real-data execution and findings require the Kaggle CSV.
 See `docs/validation.md` for commands actually executed during setup.
@@ -171,3 +178,34 @@ WP2: implement and compare model pipelines on shared splits after review.
 WP3: calibration, SHAP, and cost-sensitive thresholds after models and assumptions
 are approved. WP numbering and proposed five-member ownership need team agreement;
 no experimental results or financial cost assumptions are invented here.
+
+
+## Minimal baseline workflow
+
+After configuring Kaggle authentication and accepting the rules:
+
+```powershell
+uv sync --locked
+uv run python scripts/download_dataset.py
+uv run python scripts/download_dataset.py
+uv run python -m ipykernel install --sys-prefix --name credit-risk --display-name "Credit Risk (uv)"
+uv run python -m nbconvert --to notebook --execute notebooks/01_eda.ipynb --ExecutePreprocessor.kernel_name=credit-risk --ExecutePreprocessor.timeout=600 --output 01_eda.executed.ipynb --output-dir artifacts
+uv run python -m src.split
+uv run python -m src.train
+uv run pytest
+```
+
+`configs/baselines.yaml` defines a prior-based DummyClassifier, balanced Logistic
+Regression (C=1, lbfgs, max_iter=2000), and a fixed 0.5 decision threshold. No tuning
+is performed. Training reuses an existing fingerprint-validated manifest, fits
+preprocessing on training only, evaluates validation only, and verifies model
+save/reload consistency. Outputs and their schema are documented in CONTRIBUTING.
+No test feature transformation or model evaluation occurs. PR-AUC is reported as
+average precision; probability and threshold metrics are grouped separately.
+Class weighting changes probability interpretation; these are uncalibrated baselines.
+No Random Forest/XGBoost, calibration, SHAP or cost experiment is implemented.
+
+These commands require the official CSV. Baseline code is tested on unit fixtures;
+no real-data metrics, EDA findings or fitted research artifacts are claimed until
+the real workflow executes. The optional real-data integration test skips clearly
+when the CSV is absent. Shared model and split contracts are unchanged.
