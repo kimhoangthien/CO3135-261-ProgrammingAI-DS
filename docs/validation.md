@@ -226,11 +226,11 @@ uv is still locally bootstrapped; install on PATH using the README instructions.
 No dependencies upgraded/downgraded, environments deleted, final models trained,
 commits created or changes pushed.
 
-## Post-validation cleanup — 2026-11-10
+## Post-validation cleanup ï¿½ 2026-11-10
 
 Removed the temporary .venv-uv-validation environment, pytest/Python caches, Jupyter smoke-test runtime files and logs, temporary JSON reports, and the ignored validation helper. Earlier references to those artifacts are historical execution records. Kept the working .venv, .venv-pip-backup rollback environment, and artifacts/uv-bootstrap (the only locally available uv executable). No application code or tests changed; tests were not rerun for cache cleanup. The last full run passed all 34 tests.
 
-## Single requirements export — 2026-11-10
+## Single requirements export ï¿½ 2026-11-10
 
 Consolidated compatibility exports into requirements.txt. Verified every package/version in requirements-download.txt was already present in the full uv-generated export before removing the download-only file. Updated README, downloader recovery-message references, and their corresponding test expectation. Dependency configuration, uv.lock and installed versions are unchanged. Executed uv run --locked pytest -q -p no:cacheprovider tests/test_download_dataset.py: 17 passed in 0.53s. Earlier references to requirements-download.txt are historical.
 
@@ -329,3 +329,39 @@ Git publication is a separate step after this validation and staged-file review.
 The final handoff report records the resulting commit and verified local/remote
 branch tips. Only publish after confirming no existing branch will be replaced;
 feature creation must return to synchronized dev before each independent branch.
+
+
+## Restored data pipeline implementation (2026-11-13)
+
+The current workspace contains the official `cs-training.csv`; the blocked
+Kaggle-authentication entries above are historical. Reimplemented the split
+manifest protections, baseline manifest requirements, focused regression tests,
+and current real-data EDA/status documentation after those working files had
+been checked out.
+
+Used the already installed Conda interpreter at
+`/home/acer/miniconda3/envs/env/bin/python`; no uv or dependencies were
+downloaded or changed.
+
+- Verified `src.data.load_data`: 150,000 rows, ten features plus target,
+  139,974 class-0 and 10,026 class-1 observations, 609 duplicate records,
+  29,731 missing `MonthlyIncome` and 3,924 missing `NumberOfDependents`.
+- Verified the shared manifest fingerprint, seed 42, 70/15/15 ratios, and
+  complete 105,000/22,500/22,500 partitions.
+- `/home/acer/miniconda3/envs/env/bin/python -m pytest -q tests/test_split.py tests/test_baselines.py`:
+  **16 passed**.
+- `/home/acer/miniconda3/envs/env/bin/python -m pytest -q`: **46 passed** with
+  one expected data-quality warning (609 duplicates and missing values retained).
+- `/home/acer/miniconda3/envs/env/bin/python -m src.split`: reused the existing
+  105,000/22,500/22,500 manifest; its SHA-256 was unchanged.
+- Re-ran Dummy prior and Logistic Regression on the real data with temporary
+  artifact/table directories. Each produced 22,500 validation predictions,
+  classes `[0, 1]`, exact prediction schema, finite probabilities in `[0, 1]`,
+  and a reload-verified pipeline. ROC-AUC, average precision and Brier score
+  matched existing local metrics to `1e-12`. The test partition was not
+  evaluated, and local outputs were not overwritten.
+- Split CLI reuse and existing-manifest non-overwrite behavior are covered by
+  tests; `--force` is explicit for team-approved replacement only.
+
+The notebook `notebooks/demo.ipynb` had a pre-existing user modification when
+work resumed and was left untouched.

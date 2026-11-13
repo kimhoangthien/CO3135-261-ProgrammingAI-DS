@@ -23,11 +23,11 @@ model contract, integration tests, and initial baseline maintenance. Coordinate
 changes to configs/default.yaml and configs/baselines.yaml. The foundation lives
 on main; feature/data-pipeline is for further development and maintenance.
 
-The baseline implementation now provides DummyClassifier(strategy=prior) and a
-scaled, balanced LogisticRegression factory in src/models/logistic.py. This code
-is unit-tested; real-data EDA/fits/metrics/artifacts remain blocked until Kaggle
-credentials are configured. Resolve the blocker and validate shared splits before
-publishing experimental findings. Never replace missing real data with fixtures.
+The shared data pipeline and initial Dummy prior/Logistic Regression baselines
+have been executed on the local official dataset. EDA findings, split fingerprint,
+validation-only metrics and artifacts are documented in `docs/eda_findings.md`.
+The fixed test partition remains unused. Reuse the validated manifest; do not
+replace it without team approval. Never treat fixture results as research results.
 
 ## Member 2: Baseline Models
 

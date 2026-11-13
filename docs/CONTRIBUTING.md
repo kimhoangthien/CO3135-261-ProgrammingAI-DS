@@ -72,11 +72,14 @@ or bulky executed notebooks. EDA charts/tables go to results/figures and tables.
 
 Member 1 creates and reviews data/processed/splits.json. Download the identical
 ordered official CSV; reuse the reviewed manifest (transfer it through the team's
-approved private artifact channel or regenerate with the exact agreed data/seed).
-Check its fingerprint with src.split.load_splits; mismatches must stop experiments.
-Do not edit/redefine shared splits. The baseline CLI creates the manifest only if
-absent and otherwise reloads it. Do not overwrite an existing shared manifest with
-new ratio/seed settings. Keep seed 42 and stratified ratios 70/15/15.
+approved private artifact channel or create it once with the exact agreed
+data/seed). Check its fingerprint with src.split.load_splits; mismatches must stop
+experiments. Do not edit/redefine shared splits. `python -m src.split` validates
+and reuses an existing manifest, and creates one only if absent.
+`python -m src.train` requires an existing valid manifest. Replacing an existing manifest
+requires explicit team approval and `python -m src.split --force`; do not
+overwrite it with new ratio/seed settings. Keep seed 42 and stratified ratios
+70/15/15.
 
 Use src.data.FEATURES in order. Fit src.preprocessing.build_model_pipeline only
 on training rows; transform validation without refitting. Never impute, scale or

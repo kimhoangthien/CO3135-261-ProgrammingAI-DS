@@ -3,9 +3,9 @@
 
 Phase 1 provides data validation, exploratory analysis, reproducible shared splits,
 and preprocessing for future Logistic Regression, Random Forest and XGBoost comparisons.
-Minimal Dummy and Logistic Regression baseline code is provided; real-data runs
-are blocked until the official CSV is available. SeriousDlqin2yrs measures serious delinquency, not legal
-default, bankruptcy or realized loss.
+The official training data has been analyzed, and initial Dummy and Logistic
+Regression validation baselines are available locally. SeriousDlqin2yrs measures
+serious delinquency, not legal default, bankruptcy or realized loss.
 
 ## Setup with uv (PowerShell, repository root)
 
@@ -163,17 +163,14 @@ file ownership and handoff order. Member 1 leads integration review.
 
 ## Status and next work
 
-**Phase 2A status (2026-11-11): blocked by Kaggle authentication.** The official
-download returned "Kaggle authentication is missing or invalid"; the CSV remains
-absent. Configure credentials and accept the competition rules using the Official
-data instructions above, then rerun `uv run python scripts/download_dataset.py`.
-No real-data EDA or trained Dummy/Logistic Regression baselines, metrics, or fitted artifacts
-have been produced. The leader scope and real-data integration checks remain
-incomplete. All 34 existing unit tests passed during this prerequisite check.
-
-
-Foundation implemented. Real-data execution and findings require the Kaggle CSV.
-See `docs/validation.md` for commands actually executed during setup.
+**Phase 2A status (2026-11-13): real-data EDA and initial validation baselines
+are present locally.** The official training CSV contains 150,000 rows and the
+local EDA tables, 70/15/15 seed-42 split manifest, baseline metrics, validation
+predictions and fitted pipelines are available as ignored local outputs. See
+`docs/eda_findings.md` for measured results and caveats. Earlier
+Kaggle-authentication blockers in `docs/validation.md` are historical, not the
+current workspace state. Test-set evaluation remains reserved for the final
+locked workflow.
 WP2: implement and compare model pipelines on shared splits after review.
 WP3: calibration, SHAP, and cost-sensitive thresholds after models and assumptions
 are approved. WP numbering and proposed five-member ownership need team agreement;
@@ -205,7 +202,9 @@ average precision; probability and threshold metrics are grouped separately.
 Class weighting changes probability interpretation; these are uncalibrated baselines.
 No Random Forest/XGBoost, calibration, SHAP or cost experiment is implemented.
 
-These commands require the official CSV. Baseline code is tested on unit fixtures;
-no real-data metrics, EDA findings or fitted research artifacts are claimed until
-the real workflow executes. The optional real-data integration test skips clearly
-when the CSV is absent. Shared model and split contracts are unchanged.
+These commands require the official CSV. `src.split` validates and reuses an
+existing manifest; it creates one only when missing. Use `--force` to replace an
+existing manifest only after explicit team approval. `src.train` refuses to run
+without a previously validated manifest and never evaluates test rows. The
+optional real-data integration test skips clearly when the CSV is absent. Shared
+model and split contracts are unchanged.
