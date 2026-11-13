@@ -86,6 +86,11 @@ before publishing experimental findings. Never substitute fixtures for real data
 
 ## Member 2: Logistic Regression & Random Forest
 
+The shared data pipeline and initial Dummy prior/Logistic Regression baselines
+have been executed on the local official dataset. EDA findings, split fingerprint,
+validation-only metrics and artifacts are documented in `docs/eda_findings.md`.
+The fixed test partition remains unused. Reuse the validated manifest; do not
+replace it without team approval. Never treat fixture results as research results.
 **Branch:** `feature/baseline-models`
 
 **Responsibilities**

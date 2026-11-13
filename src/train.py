@@ -17,19 +17,21 @@ from .data import FEATURES, load_data
 from .evaluate import evaluate_probabilities, validation_predictions
 from .models.logistic import build_logistic_baseline
 from .preprocessing import build_model_pipeline
-from .split import fingerprint, load_splits, make_splits, save_splits
+from .split import (fingerprint, load_splits,
+                    validate_split_configuration)
 
 
 def shared_splits(frame, cfg):
     path = resolve(cfg['outputs']['processed']) / 'splits.json'
     if not path.exists():
-        parts = make_splits(frame, cfg['target'], cfg['split_ratios'], cfg['random_seed'])
-        save_splits(frame, parts, path, cfg['random_seed'], cfg['split_ratios'])
+        raise FileNotFoundError(
+            f'Shared split manifest not found: {path}. Validate and create it '
+            'with `python -m src.split` only after team approval.'
+        )
+    parts = load_splits(frame, path)
     payload = json.loads(path.read_text(encoding='utf-8'))
-    if (payload['seed'] != cfg['random_seed']
-            or not np.allclose(payload['ratios'], cfg['split_ratios'])):
-        raise ValueError('Existing split configuration differs; do not overwrite the shared manifest')
-    return load_splits(frame, path), path
+    validate_split_configuration(payload, cfg['random_seed'], cfg['split_ratios'])
+    return parts, path
 
 
 def verify_preprocessing(pipeline, X_train, X_validation):

@@ -1,48 +1,58 @@
-# EDA status
+# EDA findings
 
-The real dataset was not present during initialization. No empirical findings,
-figures, class proportions, missingness rates, or anomaly counts are claimed.
-Run notebooks/01_eda.ipynb after downloading the official data and review the
-exported tables and figures. Values such as delinquency counts 96/98, debt ratios
-above one, utilization above one, and age zero are investigation candidates;
-they are not automatically invalid and must not be removed without evidence.
+## Data and reproducibility
 
+The local official `cs-training.csv` was loaded after removal of its unnamed
+index column. It contains 150,000 rows, ten numeric features and the binary
+`SeriousDlqin2yrs` target. Target counts are 139,974 class 0 (93.316%) and
+10,026 class 1 (6.684%). The EDA quality report records 609 duplicate
+feature/target rows; observations are retained. The data are imbalanced, and
+duplicate observations may cross partitions.
 
-## Phase 2A attempt ? 2026-11-11
+The shared manifest uses seed 42 and stratified 70/15/15 proportions. Its
+fingerprint is `749ec0258bc5cf33375b61742d626c109dbda73d05428267d7575224a5b21dd7`.
+It partitions 105,000 training rows, 22,500 validation rows and 22,500 test rows.
+Validation and test each contain 20,996 class-0 and 1,504 class-1 rows. Baseline
+development uses training and validation only; test remains reserved.
 
-Status: **blocked before real-data analysis**. The official Kaggle downloader
-returned exit code 1: "Kaggle authentication is missing or invalid."
-`data/raw/cs-training.csv` is absent. Presence checks found no standard
-kaggle.json/access_token file or configured token/legacy environment pair;
-no credential contents were read or printed.
+## Missingness and investigation flags
 
-No real-data EDA, split generation, baseline fitting, validation metrics,
-prediction exports or fitted model artifacts were produced in this attempt.
-Dataset size, imbalance, missingness, duplicates, suspicious-value counts and
-feature relationships remain unmeasured. Previously listed anomaly candidates
-remain investigation questions, not observed findings.
+`MonthlyIncome` has 29,731 missing values (19.821%) and
+`NumberOfDependents` has 3,924 (2.616%). The other features and target have no
+missing values in the quality tables. The current preprocessing uses training-set
+median imputation and missingness indicators; it does not delete observations.
 
-To unblock, create a token at https://www.kaggle.com/settings/api and store it
-locally outside the repository at `%USERPROFILE%/.kaggle/access_token`, or create
-a legacy API key and save kaggle.json under `%USERPROFILE%/.kaggle/`.
-Join https://www.kaggle.com/competitions/GiveMeSomeCredit/rules using that same
-account and accept its rules. Then run the README dataset download command.
-The leader scope is not complete until the real-data workflow and baselines
-specified in Phase 2A are implemented, executed and validated.
+EDA tables flag 269 rows with each of the delinquency features at 96 or 98,
+35,137 `DebtRatio` values above one, 3,321 utilization values above one, and one
+zero-age value. These are investigation candidates, not proof of invalid records.
+The negative-value table reports zero negative values for all ten features.
+IQR flags are descriptive and must not be interpreted as errors. No clipping,
+sentinel recoding, row removal or feature changes are applied.
 
+The notebook exports descriptive tables and five figures under `results/`.
+Generated tables, figures, split manifests and model artifacts are local outputs
+and are ignored by Git; the checked-in notebook contains the analysis code. Re-run
+the notebook using the repository instructions to regenerate the outputs.
 
-## Foundation finalization (2026-11-11)
+## Initial validation baselines
 
-The official download was retried and again returned "Kaggle authentication is
-missing or invalid." No real CSV, real-data EDA outputs, split manifest, research
-baseline metrics, fitted research pipelines or prediction exports exist yet.
-Minimal baseline training/evaluation code and fixture-only tests are now provided;
-this does not complete real-data execution. The EDA notebook now also exports a
-data-quality summary including duplicate count when run on the official data.
+The saved validation results use threshold 0.5. Dummy prior has ROC-AUC 0.500,
+average precision 0.0668 and Brier score 0.0624. Balanced Logistic Regression
+has ROC-AUC 0.8021, average precision 0.3136, Brier score 0.1794, precision
+0.1824 and recall 0.6682. These are initial validation-only results, not a
+test-set evaluation or calibrated probabilities. Class weighting affects
+probability interpretation; do not compare the Brier score without this caveat.
 
-Preprocessing remains training-only median imputation, optional indicators and
-Logistic Regression scaling, with no clipping/deletion or feature changes.
-Real-data evidence is required before proposing anomaly treatment. Duplicates can
-cross the required stratified partitions; investigate and disclose this risk before
-requesting any group-aware split change. Balanced Logistic Regression outputs are
-uncalibrated probabilities; interpret calibration/Brier results accordingly.
+Artifacts record the feature order, dataset fingerprint, configuration,
+dependency versions, split manifest and a successful pipeline reload probability
+check. The full fitted pipelines and exact-schema validation predictions are
+available in the ignored local `artifacts/baselines/` and
+`results/tables/baselines/` directories.
+
+## Limitations
+
+These are descriptive findings for the local dataset currently available in the
+workspace. They do not establish causality, data-entry errors, financial loss,
+or model suitability in production. Do not select or tune models, preprocessing,
+or thresholds on the test partition. Any changes to the agreed feature set,
+duplicate handling, target, or split require evidence and team approval.

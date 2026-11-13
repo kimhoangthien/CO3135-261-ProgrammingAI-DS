@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 from sklearn.pipeline import Pipeline
 from src.config import load_config
-from src.data import FEATURES
+from src.data import FEATURES, load_data
 from src.evaluate import PREDICTION_COLUMNS, evaluate_probabilities, validation_predictions
-from src.split import load_splits
+from src.split import load_splits, make_splits, save_splits
 from src.train import run_baselines
 
 
@@ -40,6 +40,12 @@ def test_baseline_workflow(frame, tmp_path, monkeypatch):
     cfg = load_config()
     cfg['dataset_path'] = str(path)
     cfg['outputs'] = {name: str(tmp_path / name) for name in cfg['outputs']}
+    persisted_frame = load_data(path, cfg['target'])
+    parts = make_splits(
+        persisted_frame, cfg['target'], cfg['split_ratios'], cfg['random_seed'])
+    manifest = tmp_path / 'processed/splits.json'
+    save_splits(
+        persisted_frame, parts, manifest, cfg['random_seed'], cfg['split_ratios'])
     fit_rows, predict_rows = [], []
     original_fit, original_predict = Pipeline.fit, Pipeline.predict_proba
     def fit(self, X, y, **kwargs):
@@ -51,7 +57,6 @@ def test_baseline_workflow(frame, tmp_path, monkeypatch):
     monkeypatch.setattr(Pipeline, 'fit', fit)
     monkeypatch.setattr(Pipeline, 'predict_proba', predict)
     metrics = run_baselines(cfg)
-    manifest = tmp_path / 'processed/splits.json'
     parts = load_splits(pd.read_csv(path), manifest)
     original_manifest = manifest.read_bytes()
     assert all(ids == parts['train'] for ids in fit_rows)
@@ -67,6 +72,10 @@ def test_baseline_workflow(frame, tmp_path, monkeypatch):
         assert metrics[name]['reload_verified']
         assert metrics[name]['preprocessing']['training_statistics_verified']
     assert metrics['dummy_prior']['probability_metrics']['roc_auc'] == .5
+    mismatched_cfg = {**cfg, 'random_seed': cfg['random_seed'] + 1}
+    with pytest.raises(ValueError, match='split seed differs'):
+        run_baselines(mismatched_cfg)
+    assert manifest.read_bytes() == original_manifest
     run_baselines(cfg)
     assert manifest.read_bytes() == original_manifest
     metadata = (tmp_path / 'artifacts/baselines/configuration.yaml').read_text()
@@ -81,6 +90,21 @@ def test_missing_data_fails_before_artifacts(tmp_path):
     with pytest.raises(FileNotFoundError):
         run_baselines(cfg)
     assert not (tmp_path / 'artifacts').exists()
+
+
+def test_missing_shared_manifest_stops_without_creating_outputs(frame, tmp_path):
+    path = tmp_path / 'unit-fixture.csv'
+    frame.to_csv(path, index=False)
+    cfg = load_config()
+    cfg['dataset_path'] = str(path)
+    cfg['outputs'] = {name: str(tmp_path / name) for name in cfg['outputs']}
+
+    with pytest.raises(FileNotFoundError, match='Shared split manifest not found'):
+        run_baselines(cfg)
+
+    assert not (tmp_path / 'processed/splits.json').exists()
+    assert not (tmp_path / 'artifacts').exists()
+    assert not (tmp_path / 'tables').exists()
 
 
 def test_future_estimator_preprocessing_contract(frame):

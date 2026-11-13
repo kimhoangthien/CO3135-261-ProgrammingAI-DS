@@ -40,19 +40,45 @@ def validate_splits(frame, splits):
 
 def load_splits(frame, path):
     payload = json.loads(resolve(path).read_text(encoding='utf-8'))
+    if not isinstance(payload, dict) or not {
+            'fingerprint', 'seed', 'ratios', 'splits'} <= payload.keys():
+        raise ValueError('Malformed split manifest')
     if payload['fingerprint'] != fingerprint(frame):
         raise ValueError('Dataset content or row order differs from saved splits')
     validate_splits(frame, payload['splits'])
     return payload['splits']
 
+def validate_split_configuration(payload, seed, ratios):
+    if payload.get('seed') != seed:
+        raise ValueError('Existing split seed differs; do not overwrite the shared manifest')
+    try:
+        saved_ratios = np.asarray(payload.get('ratios'), dtype=float)
+    except (TypeError, ValueError):
+        raise ValueError('Existing split ratios are invalid; do not overwrite the shared manifest') from None
+    expected_ratios = np.asarray(ratios, dtype=float)
+    if (saved_ratios.shape != expected_ratios.shape
+            or not np.allclose(saved_ratios, expected_ratios)):
+        raise ValueError('Existing split ratios differ; do not overwrite the shared manifest')
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', default=None)
+    parser.add_argument(
+        '--force', action='store_true',
+        help='Replace an existing shared manifest after team approval',
+    )
     args = parser.parse_args()
     cfg = load_config(args.config)
     frame = load_data(cfg['dataset_path'], cfg['target'])
-    splits = make_splits(frame, cfg['target'], cfg['split_ratios'], cfg['random_seed'])
     path = resolve(cfg['outputs']['processed']) / 'splits.json'
+    if path.exists() and not args.force:
+        splits = load_splits(frame, path)
+        payload = json.loads(path.read_text(encoding='utf-8'))
+        validate_split_configuration(payload, cfg['random_seed'], cfg['split_ratios'])
+        print(f'Reusing shared splits from {path}: ' +
+              str({k: len(v) for k, v in splits.items()}))
+        return
+    splits = make_splits(frame, cfg['target'], cfg['split_ratios'], cfg['random_seed'])
     save_splits(frame, splits, path, cfg['random_seed'], cfg['split_ratios'])
     print(f'Saved shared splits to {path}: ' + str({k: len(v) for k,v in splits.items()}))
 

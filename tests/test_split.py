@@ -1,4 +1,6 @@
 import pytest
+import yaml
+import pandas as pd
 from src.split import make_splits, save_splits, load_splits
 
 def test_split_contract(frame, tmp_path):
@@ -28,3 +30,28 @@ def test_manifest_rejects_overlap(frame, tmp_path):
     parts['test'][0] = parts['train'][0]
     with pytest.raises(ValueError, match='exactly once'):
         validate_splits(frame, parts)
+
+
+def test_split_cli_reuses_existing_manifest(frame, tmp_path, monkeypatch):
+    from src.split import main
+
+    dataset_path = tmp_path / 'dataset.csv'
+    frame.to_csv(dataset_path, index=False)
+    persisted_frame = pd.read_csv(dataset_path)
+    manifest_path = tmp_path / 'processed/splits.json'
+    parts = make_splits(persisted_frame)
+    save_splits(persisted_frame, parts, manifest_path)
+    original_manifest = manifest_path.read_bytes()
+    config_path = tmp_path / 'config.yaml'
+    config_path.write_text(yaml.safe_dump({
+        'dataset_path': str(dataset_path),
+        'target': 'SeriousDlqin2yrs',
+        'random_seed': 42,
+        'split_ratios': [0.7, 0.15, 0.15],
+        'outputs': {'processed': str(manifest_path.parent)},
+    }), encoding='utf-8')
+    monkeypatch.setattr('sys.argv', ['src.split', '--config', str(config_path)])
+
+    main()
+
+    assert manifest_path.read_bytes() == original_manifest
