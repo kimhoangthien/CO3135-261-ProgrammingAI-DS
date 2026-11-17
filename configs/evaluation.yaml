@@ -2,9 +2,9 @@
 threshold: 0.5
 
 models:
-  logistic_tuned: artifacts/member2/logistic_tuned.joblib
-  random_forest_tuned: artifacts/member2/random_forest_tuned.joblib
-  xgboost_standard_tuned: artifacts/member3/xgboost_standard_tuned.joblib
+  logistic_tuned: artifacts/02_baselines/logistic_tuned.joblib
+  random_forest_tuned: artifacts/02_baselines/random_forest_tuned.joblib
+  xgboost_standard_tuned: artifacts/03_xgboost/xgboost_standard_tuned.joblib
 
 calibration:
   methods: [sigmoid, isotonic]

@@ -199,8 +199,8 @@ def test_member4_workflow_runs_end_to_end_without_reading_test(tmp_path, monkeyp
     ])
     workflow_main()
 
-    tables = tmp_path / 'tables' / 'member4'
-    artifacts = tmp_path / 'artifacts' / 'member4'
+    tables = tmp_path / 'tables' / '04_evaluation'
+    artifacts = tmp_path / 'artifacts' / '04_evaluation'
     summary = pd.read_csv(tables / 'evaluation_summary.csv')
     assert set(summary['calibration_method']) == {'uncalibrated', 'sigmoid', 'isotonic'}
     assert summary['selected_for_model'].sum() == 1

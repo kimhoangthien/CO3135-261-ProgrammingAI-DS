@@ -142,9 +142,9 @@ probabilities match originals. Never load untrusted pickle/joblib files.
 
 Initial baseline outputs:
 
-- artifacts/baselines/: dummy_prior.joblib, logistic_regression.joblib,
+- artifacts/01_eda/: dummy_prior.joblib, logistic_regression.joblib,
   configuration.yaml, splits.json and dependencies.txt.
-- results/tables/baselines/: metrics.json and per-model validation_predictions.csv.
+- results/tables/01_eda/: metrics.json and per-model validation_predictions.csv.
 
 Prediction columns: sample_id,y_true,y_pred_proba,model_name,split. sample_id is
 the stable zero-based row position in the cleaned ordered raw dataframe, excluded

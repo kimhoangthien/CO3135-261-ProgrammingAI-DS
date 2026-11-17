@@ -88,9 +88,9 @@ def main():
           f"validation {len(X_val)} rows; scale_pos_weight={spw:.4f}", flush=True)
 
     # 2. Output folders
-    # TODO: artifacts/member3 et results/tables/member3 (mkdir parents=True, exist_ok=True)
-    artifacts_dir = resolve(cfg["outputs"]["artifacts"]) / "member3"
-    tables_dir = resolve(cfg["outputs"]["tables"]) / "member3"
+    # TODO: artifacts/03_xgboost et results/tables/03_xgboost (mkdir parents=True, exist_ok=True)
+    artifacts_dir = resolve(cfg["outputs"]["artifacts"]) / "03_xgboost"
+    tables_dir = resolve(cfg["outputs"]["tables"]) / "03_xgboost"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     tables_dir.mkdir(parents=True, exist_ok=True)
 

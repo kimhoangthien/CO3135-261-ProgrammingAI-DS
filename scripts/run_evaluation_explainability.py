@@ -251,8 +251,8 @@ def main():
     y_validation = validation[cfg['target']]
     models = load_trusted_models(ecfg['models'], selected_names)
 
-    artifacts_dir = resolve(cfg['outputs']['artifacts']) / 'member4'
-    tables_dir = resolve(cfg['outputs']['tables']) / 'member4'
+    artifacts_dir = resolve(cfg['outputs']['artifacts']) / '04_evaluation'
+    tables_dir = resolve(cfg['outputs']['tables']) / '04_evaluation'
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     tables_dir.mkdir(parents=True, exist_ok=True)
 

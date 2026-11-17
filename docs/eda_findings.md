@@ -46,8 +46,8 @@ probability interpretation; do not compare the Brier score without this caveat.
 Artifacts record the feature order, dataset fingerprint, configuration,
 dependency versions, split manifest and a successful pipeline reload probability
 check. The full fitted pipelines and exact-schema validation predictions are
-available in the ignored local `artifacts/baselines/` and
-`results/tables/baselines/` directories.
+available in the ignored local `artifacts/01_eda/` and
+`results/tables/01_eda/` directories.
 
 ## Limitations
 

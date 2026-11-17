@@ -61,8 +61,8 @@ def main():
     )
 
     # 4. Prepare Member 2 output directories.
-    artifacts_dir = resolve(cfg["outputs"]["artifacts"]) / "member2"
-    tables_dir = resolve(cfg["outputs"]["tables"]) / "member2"
+    artifacts_dir = resolve(cfg["outputs"]["artifacts"]) / "02_baselines"
+    tables_dir = resolve(cfg["outputs"]["tables"]) / "02_baselines"
 
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     tables_dir.mkdir(parents=True, exist_ok=True)

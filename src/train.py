@@ -66,8 +66,8 @@ def run_baselines(cfg=None, baseline_cfg=None):
         'dummy_prior': build_model_pipeline(DummyClassifier(random_state=cfg['random_seed'], **baseline_cfg['dummy'])),
         'logistic_regression': build_logistic_baseline(cfg['random_seed'], **baseline_cfg['logistic']),
     }
-    artifacts = resolve(cfg['outputs']['artifacts']) / 'baselines'
-    tables = resolve(cfg['outputs']['tables']) / 'baselines'
+    artifacts = resolve(cfg['outputs']['artifacts']) / '01_eda'
+    tables = resolve(cfg['outputs']['tables']) / '01_eda'
     artifacts.mkdir(parents=True, exist_ok=True)
     tables.mkdir(parents=True, exist_ok=True)
     metrics = {}

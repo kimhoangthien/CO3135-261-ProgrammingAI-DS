@@ -62,11 +62,11 @@ def test_baseline_workflow(frame, tmp_path, monkeypatch):
     assert all(ids == parts['train'] for ids in fit_rows)
     assert all(ids == parts['validation'] for ids in predict_rows)
     for name in ['dummy_prior', 'logistic_regression']:
-        predictions = pd.read_csv(tmp_path / f'tables/baselines/{name}_validation_predictions.csv')
+        predictions = pd.read_csv(tmp_path / f'tables/01_eda/{name}_validation_predictions.csv')
         assert list(predictions.columns) == PREDICTION_COLUMNS
         assert predictions.sample_id.tolist() == parts['validation']
         assert predictions.split.eq('validation').all()
-        saved = joblib.load(tmp_path / f'artifacts/baselines/{name}.joblib')
+        saved = joblib.load(tmp_path / f'artifacts/01_eda/{name}.joblib')
         expected = frame.iloc[parts['train']][FEATURES].median().to_numpy()
         np.testing.assert_allclose(saved.named_steps['preprocessing'].named_steps['imputer'].statistics_, expected)
         assert metrics[name]['reload_verified']
@@ -78,9 +78,9 @@ def test_baseline_workflow(frame, tmp_path, monkeypatch):
     assert manifest.read_bytes() == original_manifest
     run_baselines(cfg)
     assert manifest.read_bytes() == original_manifest
-    metadata = (tmp_path / 'artifacts/baselines/configuration.yaml').read_text()
+    metadata = (tmp_path / 'artifacts/01_eda/configuration.yaml').read_text()
     assert 'test_evaluated: false' in metadata
-    assert json.loads((tmp_path / 'tables/baselines/metrics.json').read_text())
+    assert json.loads((tmp_path / 'tables/01_eda/metrics.json').read_text())
 
 
 def test_missing_data_fails_before_artifacts(tmp_path):

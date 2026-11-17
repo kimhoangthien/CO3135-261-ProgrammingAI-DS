@@ -16,8 +16,8 @@ was never read. They are development evidence, not final performance claims.
 | Runtime | about 3 minutes in total on a laptop |
 
 The full configuration, estimator parameters, dataset fingerprint, Git revision and
-dependency freeze are saved in `artifacts/member3/configuration.yaml` and
-`artifacts/member3/dependencies.txt`.
+dependency freeze are saved in `artifacts/03_xgboost/configuration.yaml` and
+`artifacts/03_xgboost/dependencies.txt`.
 
 ## Method
 
@@ -107,7 +107,7 @@ are available locally.
 
 ### Probability reliability (preliminary)
 
-A decile reliability diagram (`results/figures/member3/reliability.png`) shows the
+A decile reliability diagram (`results/figures/03_xgboost/reliability.png`) shows the
 `standard` model close to the diagonal, `smote` slightly above it in predicted risk, and
 `weighted` strongly overestimating. Formal calibration (E4) is Member 4's scope; nothing
 is calibrated here.
@@ -130,11 +130,11 @@ SHAP. Gain importance describes the model, not causes of delinquency.
 - Recommended XGBoost candidate: `xgboost_standard_tuned` (best AP and Brier, mean
   probability matching the observed rate).
 - `xgboost_weighted_tuned` is a clear example of distorted probabilities for E4.
-- Pipelines: `artifacts/member3/<model_name>.joblib` (full preprocessing + model, reload
+- Pipelines: `artifacts/03_xgboost/<model_name>.joblib` (full preprocessing + model, reload
   verified). For the SMOTE model, the XGBoost estimator is at
   `pipeline.named_steps["model"].named_steps["model"]`; the other models expose it at
   `pipeline.named_steps["model"]`.
-- Predictions: `results/tables/member3/<model_name>_validation_predictions.csv`, columns
+- Predictions: `results/tables/03_xgboost/<model_name>_validation_predictions.csv`, columns
   `sample_id, y_true, y_pred_proba, model_name, split`, rows in shared manifest order.
 - Also available: `metrics.json`, `summary.csv`, `cv_results_<strategy>.csv`.
 - Generated files are ignored by Git; transfer them through the team's private channel

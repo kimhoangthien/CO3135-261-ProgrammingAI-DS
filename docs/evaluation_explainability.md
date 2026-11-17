@@ -58,7 +58,7 @@ plotting dependencies emit upstream deprecation warnings; no test failed.
 - `notebooks/04_evaluation.ipynb` renders comparison and uncertainty tables,
   ROC/PR curves, confusion matrices, reliability diagrams, global SHAP importance
   and local signed-contribution plots without fitting models. Executing it saves
-  the five report figures under `results/figures/member4/`.
+  the five report figures under `results/figures/04_evaluation/`.
 
 ECE and MCE are descriptive bin-dependent summaries, not proper scoring rules.
 Brier score and log loss are used for calibration selection. SHAP describes model
@@ -69,9 +69,9 @@ credit.
 
 Expected trusted artifacts:
 
-- `artifacts/member2/logistic_tuned.joblib`
-- `artifacts/member2/random_forest_tuned.joblib`
-- `artifacts/member3/xgboost_standard_tuned.joblib`
+- `artifacts/02_baselines/logistic_tuned.joblib`
+- `artifacts/02_baselines/random_forest_tuned.joblib`
+- `artifacts/03_xgboost/xgboost_standard_tuned.joblib`
 - official `data/raw/cs-training.csv` and fingerprint-matching
   `data/processed/splits.json`
 
