@@ -45,17 +45,55 @@ sys.executable points to the repository's .venv. pyproject.toml and uv.lock are
 authoritative. requirements.txt is an optional generated compatibility export;
 never edit it independently. Keep dependency changes separate and coordinated.
 
+For an existing pip environment, follow the README's isolation procedure before
+the first sync. If your terminal warns about `VIRTUAL_ENV=.venv-pip-backup`, open
+a fresh PowerShell terminal or clear the stale setting:
+
+```powershell
+Remove-Item Env:VIRTUAL_ENV -ErrorAction SilentlyContinue
+uv run python -c "import sys; print(sys.executable)"
+```
+
+Verify the path ends in this repository's `.venv\Scripts\python.exe`. Use the
+project environment for normal work; do not target the backup with `--active`.
+
 ## Official data and shared workflow
 
-Create Kaggle credentials at https://www.kaggle.com/settings/api and store them
-outside the repository, for example %USERPROFILE%/.kaggle/access_token. Sign into
-the same account and join/accept the GiveMeSomeCredit competition rules. See
-README's Official data section for legacy credentials and environment alternatives.
+Open [Kaggle API settings](https://www.kaggle.com/settings/api), sign in, and click
+**Generate New Token** under **API**. Copy the token, then run:
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$HOME\.kaggle"
+notepad "$HOME\.kaggle\access_token"
+```
+
+Paste only the token. Save with filename `access_token` and file type **All files
+(*.*)** in your home `.kaggle` directory, outside the repository. Close Notepad
+and verify without printing the token:
+
+```powershell
+Test-Path "$HOME\.kaggle\access_token"
+```
+
+This must return `True`. If it returns `False`, run
+`Get-ChildItem "$HOME\.kaggle" -Name`. If Notepad saved `access_token.txt`, fix it:
+
+```powershell
+Rename-Item -LiteralPath "$HOME\.kaggle\access_token.txt" -NewName "access_token"
+Test-Path "$HOME\.kaggle\access_token"
+```
+
+If no file exists, repeat Save As with the exact filename and file type above.
+Sign into the same account and join/accept the
+[Give Me Some Credit rules](https://www.kaggle.com/competitions/GiveMeSomeCredit/rules).
+See [README token setup](../README.md#create-the-token-file-on-windows) for full
+steps and the Official data section for legacy credentials and alternatives.
 
 From the repository root:
 
 ```powershell
 uv run python scripts/download_dataset.py
+Test-Path ".\data\raw\cs-training.csv"
 # Running again validates the existing CSV and skips downloading.
 uv run python scripts/download_dataset.py
 uv run python -m nbconvert --to notebook --execute notebooks/01_eda.ipynb --ExecutePreprocessor.kernel_name=credit-risk --ExecutePreprocessor.timeout=600 --output 01_eda.executed.ipynb --output-dir artifacts
@@ -63,6 +101,14 @@ uv run python -m src.split
 uv run python -m src.train
 uv run pytest
 ```
+
+`Validated existing dataset; skipping download` confirms the local CSV passed
+validation; it does not test the token because no network download occurred.
+The `Data quality report (rows retained)` warning reports duplicates and missing
+values while preserving all rows. Keep raw observations intact and handle missing
+values through preprocessing fitted on training only. See the README for observed
+counts and troubleshooting. After download, Member 1 prepares/reviews the shared
+manifest; other members reuse that reviewed manifest as described below.
 
 EDA and baselines require the real data/raw/cs-training.csv. Authentication errors
 are blockers, not evidence about dataset characteristics. Do not publish fixture

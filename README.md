@@ -38,6 +38,19 @@ same kernel. Verify `sys.executable` points into this repository's `.venv`.
 The kernel is registered inside the environment, not in global user configuration.
 Re-register it after recreating or relocating an environment.
 
+If uv warns that `VIRTUAL_ENV=.venv-pip-backup` does not match `.venv`, the
+terminal still references the old environment. uv ignores that setting and uses
+the project environment. Open a fresh PowerShell terminal, or clear the stale
+setting and verify the interpreter:
+
+```powershell
+Remove-Item Env:VIRTUAL_ENV -ErrorAction SilentlyContinue
+uv run python -c "import sys; print(sys.executable)"
+```
+
+The printed path should end in this repository's `.venv\Scripts\python.exe`.
+Do not use `--active` to target the pip backup for normal project work.
+
 For an existing pip environment, first validate in isolation (do not run a default
 sync over the old environment before validating):
 
@@ -89,6 +102,46 @@ Environment variables `KAGGLE_API_TOKEN` or the pair `KAGGLE_USERNAME`/`KAGGLE_K
 are also supported by the CLI. Keep credentials outside the repository; never
 paste them into source code or commit them.
 
+### Create the token file on Windows
+
+1. Sign in to [Kaggle API settings](https://www.kaggle.com/settings/api).
+   Under **API**, click **Generate New Token**, provide a name if prompted, and
+   copy the generated token. Do not share the token in chat or screenshots.
+2. In PowerShell, create the credentials directory and open the token file:
+
+   ```powershell
+   New-Item -ItemType Directory -Force -Path "$HOME\.kaggle"
+   notepad "$HOME\.kaggle\access_token"
+   ```
+
+3. Paste only the token, without quotes or extra text. In Notepad, choose
+   **File > Save As**, select the `$HOME\.kaggle` directory, enter `access_token`
+   as the filename, and select **All files (*.*)** as the file type. Save and
+   close Notepad. The filename must have no `.txt` extension.
+4. Confirm the exact file exists without displaying its contents:
+
+   ```powershell
+   Test-Path "$HOME\.kaggle\access_token"
+   ```
+
+   If this returns `False`, inspect filenames:
+
+   ```powershell
+   Get-ChildItem "$HOME\.kaggle" -Name
+   ```
+
+   If you see `access_token.txt`, rename it and repeat the check:
+
+   ```powershell
+   Rename-Item -LiteralPath "$HOME\.kaggle\access_token.txt" -NewName "access_token"
+   Test-Path "$HOME\.kaggle\access_token"
+   ```
+
+   If the directory is empty, repeat the Notepad save steps. Continue once the
+   check returns `True`; this confirms the file exists, not that the token works.
+
+### Accept the rules and download raw data
+
 Sign in with the same account, join [Give Me Some Credit](https://www.kaggle.com/competitions/GiveMeSomeCredit/rules)
 and accept its competition rules. Then run from the repository root:
 
@@ -107,6 +160,24 @@ existing training CSV and remove temporary files. Authentication, competition
 access, network and corrupt-archive failures return exit code 1 with setup or retry
 instructions. Raw CLI diagnostics are suppressed to avoid printing credentials.
 The archive is not retained after extraction.
+
+Verify the training file exists after the command succeeds:
+
+```powershell
+Test-Path ".\data\raw\cs-training.csv"
+```
+
+`Validated existing dataset; skipping download` means the existing training CSV
+passed validation. No download was attempted, so this message does not verify
+Kaggle authentication. Use `--force` only when intentionally replacing a valid
+local download. Authentication errors require checking the token and filename;
+competition access errors require checking rule acceptance with the same account.
+
+A `Data quality report (rows retained)` warning is informational: the loader
+reports duplicates and missing values without removing observations. The observed
+official training CSV reports 609 duplicate records, 29,731 missing `MonthlyIncome`
+values, and 3,924 missing `NumberOfDependents` values. Keep the raw data intact;
+fit preprocessing on training rows only.
 
 Manual fallback: download and extract `cs-training.csv` from the competition Data
 tab to `data/raw/`. No substitute dataset is provided. The loader removes unnamed
