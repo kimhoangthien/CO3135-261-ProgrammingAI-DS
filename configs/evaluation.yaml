@@ -1,0 +1,24 @@
+# Member 4: validation-only evaluation, calibration and explainability.
+threshold: 0.5
+
+models:
+  logistic_tuned: artifacts/member2/logistic_tuned.joblib
+  random_forest_tuned: artifacts/member2/random_forest_tuned.joblib
+  xgboost_standard_tuned: artifacts/member3/xgboost_standard_tuned.joblib
+
+calibration:
+  methods: [sigmoid, isotonic]
+  cv: 3
+  n_bins: 10
+  strategy: quantile
+
+uncertainty:
+  n_resamples: 1000
+  confidence_level: 0.95
+
+explainability:
+  model: xgboost_standard_tuned
+  background_size: 200
+  global_sample_size: 1000
+  local_cases: 3
+  local_top_features: 10
