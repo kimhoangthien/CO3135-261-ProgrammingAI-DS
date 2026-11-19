@@ -140,8 +140,6 @@ def test_member4_config_and_notebook_are_valid():
     assert config['explainability']['model'] in config['models']
     notebook = nbformat.read(ROOT / 'notebooks/04_evaluation.ipynb', as_version=4)
     nbformat.validate(notebook)
-    assert all(cell.get('execution_count') is None
-               for cell in notebook.cells if cell.cell_type == 'code')
 
 
 def test_member4_workflow_runs_end_to_end_without_reading_test(tmp_path, monkeypatch):

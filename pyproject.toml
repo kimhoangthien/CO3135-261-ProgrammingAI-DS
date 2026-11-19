@@ -115,3 +115,9 @@ constraint-dependencies = [
 [tool.pytest.ini_options]
 # Keep repository imports available for the pytest console entry point.
 pythonpath = ["."]
+filterwarnings = [
+    # SHAP 0.46 uses NumPy's deprecated scalar dtype conversion internally.
+    "ignore:Converting `np.inexact` or `np.floating` to a dtype is deprecated:DeprecationWarning:shap\\.plots\\.colors\\._colorconv",
+    # Matplotlib 3.9 uses deprecated pyparsing aliases in its font/math parsers.
+    "ignore:'(oneOf|parseString|resetCache|enablePackrat)' deprecated.*:DeprecationWarning:matplotlib\\._(fontconfig_pattern|mathtext)",
+]
